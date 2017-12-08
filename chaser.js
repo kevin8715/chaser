@@ -1,5 +1,6 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
+const progressBar = document.querySelector("progress")
 
 let ball = {
   x: 250,
