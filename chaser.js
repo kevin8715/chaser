@@ -1,29 +1,31 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 const progressBar = document.querySelector("progress");
+let countForDrawSceneExecution = 0;
 
-function startGame() {
-  if (progressBar.value === 0) {
-    progressBar.value = 100;
-    Object.assign(player, enemy, { x: canvas.width / 2, y: canvas.height / 2 });
-    requestAnimationFrame(drawScene);
+document.body.addEventListener("mousemove", updateMouse);
+
+canvas.addEventListener("click", () => {
+  if (game.isOver()) {
+    game.start();
   }
-}
-// change how hitboxes work so that I can have images
-function hitBoxes() {
-  return;
-}
+});
 
-function distanceBetween(sprite1, sprite2) {
-  return Math.hypot(sprite1.x - sprite2.x, sprite1.y - sprite2.y);
-}
-
-// change
-function haveCollided(sprite1, sprite2) {
-  return distanceBetween(sprite1, sprite2) < sprite1.radius + sprite2.radius;
-}
+const game = {
+  start() {
+    progressBar.value = 100;
+    Object.assign(player, { x: canvas.width / 2, y: canvas.height / 2 });
+    requestAnimationFrame(drawScene);
+  },
+  isOver() {
+    return progressBar.value <= 0;
+  }
+};
 
 class Sprite {
+  constructor(x, y, radius, color, speed, imageURL, specialAttribute) {
+    Object.assign(this, { x, y, radius, color, speed, imageURL, specialAttribute });
+  }
   draw() {
     ctx.fillStyle = this.color;
     ctx.beginPath();
@@ -31,76 +33,108 @@ class Sprite {
     ctx.fill();
     ctx.stroke();
   }
+  collidedWith(other) {
+    const distanceBetween = Math.hypot(this.x - other.x, this.y - other.y);
+    return distanceBetween < this.radius + other.radius;
+  }
+  moveToward(target) {
+    this.x += (target.x - this.x) * this.speed;
+    this.y += (target.y - this.y) * this.speed;
+  }
+  pushOffFrom(other) {
+    let [dx, dy] = [other.x - this.x, other.y - this.y];
+    const distanceBetween = Math.hypot(dx, dy);
+    let distanceToMove = this.radius + other.radius - distanceBetween;
+    if (distanceToMove > 0) {
+      dx /= distanceBetween;
+      dy /= distanceBetween;
+      this.x -= dx * distanceToMove / 2;
+      this.y -= dy * distanceToMove / 2;
+      other.x += dx * distanceToMove / 2;
+      other.y += dy * distanceToMove / 2;
+    }
+  }
+  specialAttributeAction(referencedSprite){
+    if(referencedSprite.specialAttribute == 1){
+      enemies.push(new Enemy(referencedSprite.x, referencedSprite.y, referencedSprite.radius, referencedSprite.color, referencedSprite.speed*2, "http://www.clker.com/cliparts/1/i/h/v/I/e/ball-md.png"));
+    }
+    if(referencedSprite.specialAttribute == 2){
+      enemies.push(new Enemy(referencedSprite.x, referencedSprite.y, referencedSprite.radius, referencedSprite.color, referencedSprite.speed*0.5, "https://vignette.wikia.nocookie.net/hollowknight/images/6/6e/B_Crystal_Crawler.png/revision/latest?cb=20170412170111"));
+    }
+      
+  }
 }
-class obstacles extends Sprite {}
+
 class Player extends Sprite {
-  constructor(x, y, radius, color, speed) {
-    super();
+  constructor(x, y, radius, color, speed, imageURL, specialAttribute) {
+    super(x, y, radius, color, speed, imageURL, specialAttribute);
     this.image = new Image();
-    this.image.src =
-      "http://pngimg.com/uploads/donald_trump/donald_trump_PNG85.png";
-    Object.assign(this, { x, y, radius, color, speed });
+    this.image.src = imageURL;
   }
   draw() {
-    ctx.drawImage(this.image, this.x, this.y, 25, 30);
+    ctx.drawImage(
+      this.image,
+      this.x - this.radius / 2,
+      this.y - this.radius / 2,
+      this.radius,
+      this.radius
+    );
   }
 }
 
-let player = new Player(250, 150, 10, "lemonchiffon", 0.07);
+let player = new Player(250, 150, 30, "lemonchiffon", 0.07, "https://vignette.wikia.nocookie.net/hollowknight/images/2/27/The_Knight.png/revision/latest?cb=20170712213446");
 
 class Enemy extends Sprite {
-  constructor(x, y, radius, color, speed) {
-    super();
-    Object.assign(this, { x, y, radius, color, speed });
+    constructor(x, y, radius, color, speed, imageURL, specialAttribute) {
+    super(x, y, radius, color, speed, imageURL, specialAttribute);
+    this.image = new Image();
+    this.image.src = imageURL;
+  }
+  draw() {
+    ctx.drawImage(
+      this.image,
+      this.x - this.radius / 2,
+      this.y - this.radius / 2,
+      this.radius,
+      this.radius
+    );
   }
 }
 
+
 let enemies = [
-  new Enemy(80, 200, 20, "rgba(250, 0, 50, 0.8)", 0.02),
-  new Enemy(200, 250, 17, "rgba(200, 100, 0, 0.7)", 0.01),
-  new Enemy(150, 180, 22, "rgba(50, 10, 70, 0.5)", 0.002)
+  new Enemy(80, 200, 20, "rgba(250, 0, 50, 0.8)", 0.02, "https://vignette.wikia.nocookie.net/hollowknight/images/d/d8/Dung-Defender-2.png/revision/latest?cb=20170426131403", 1),
+  new Enemy(200, 250, 20, "rgba(200, 100, 0, 0.7,)", 0.01, "https://vignette.wikia.nocookie.net/hollowknight/images/5/50/B_Kingsmould.png/revision/latest?cb=20170412204332"),
+  new Enemy(150, 180, 20, "rgba(50, 10, 70, 0.5)", 0.002, "https://vignette.wikia.nocookie.net/hollowknight/images/9/95/B_Duranda.png/revision/latest?cb=20170411223632"),
+  new Enemy(0, 200, 20, "rgba(250, 210, 70, 0.6)", 0.008, "https://vignette.wikia.nocookie.net/hollowknight/images/0/02/B_Crystal_Guardian.png/revision/latest?cb=20170412170806", 2),
+  new Enemy(400, 400, 20, "rgba(0, 200, 250, 0.6)", 0.008, "https://vignette2.wikia.nocookie.net/hollowknight/images/b/b9/B_Shade.png/revision/latest?cb=20170413174926")
 ];
 
+
 let mouse = { x: 0, y: 0 };
-document.body.addEventListener("mousemove", updateMouse);
 function updateMouse(event) {
   const { left, top } = canvas.getBoundingClientRect();
   mouse.x = event.clientX - left;
   mouse.y = event.clientY - top;
 }
 
-// TODO function start game here
-
-function moveToward(leader, follower, speed) {
-  follower.x += (leader.x - follower.x) * speed;
-  follower.y += (leader.y - follower.y) * speed;
-}
-
-function pushOff(c1, c2) {
-  let [dx, dy] = [c2.x - c1.x, c2.y - c1.y];
-  const L = Math.hypot(dx, dy);
-  let distToMove = c1.radius + c2.radius - L;
-  if (distToMove > 0) {
-    dx /= L;
-    dy /= L;
-    c1.x -= dx * distToMove / 2;
-    c1.y -= dy * distToMove / 2;
-    c2.x += dx * distToMove / 2;
-    c2.y += dy * distToMove / 2;
-  }
-}
-
 function updateScene() {
-  moveToward(mouse, player, player.speed);
-  enemies.forEach(enemy => moveToward(player, enemy, enemy.speed));
-  enemies.forEach((enemy, i) =>
-    pushOff(enemy, enemies[(i + 1) % enemies.length])
-  );
+  player.moveToward(mouse);
+  enemies.forEach(enemy => enemy.moveToward(player));
+  for (let i = 0; i < enemies.length; i++) {
+    for (let j = i + 1; j < enemies.length; j++) {
+      enemies[i].pushOffFrom(enemies[j]);
+    }
+  }
   enemies.forEach(enemy => {
-    if (haveCollided(enemy, player)) {
-      progressBar.value -= 2;
+    if (enemy.collidedWith(player)) {
+      progressBar.value -= 0.5;
+    }
+    if(countForDrawSceneExecution%300 === 0){
+      enemy.specialAttributeAction(enemy);
     }
   });
+  
 }
 
 function clearBackground() {
@@ -109,20 +143,17 @@ function clearBackground() {
 }
 
 function drawScene() {
+  countForDrawSceneExecution ++;
   clearBackground();
   player.draw();
   enemies.forEach(enemy => enemy.draw());
   updateScene();
   if (progressBar.value <= 0) {
     ctx.font = "30px Arial";
-    ctx.fillText("Game over, click to play again", 0, canvas.height / 2);
+    ctx.fillText("Game over, click to play again", 10, 50);
   } else {
     requestAnimationFrame(drawScene);
   }
 }
 
-canvas.addEventListener("click", () => {
-  if (game.isOver()) {
-    game.start();
-  }
-});
+requestAnimationFrame(drawScene);
