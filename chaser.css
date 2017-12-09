@@ -1,4 +1,17 @@
 canvas {
-  border: 1px solid blue;
-  margin: 20px;
+  border: 1px blue;
+  margin-top: 10px;
+}
+
+progress {
+  width: 400px;  
+}
+
+h1 {
+  font: 40px "Times New Roman";  
+}
+
+body {
+  margin-top: 0;
+  padding-left: 20px;
 }
