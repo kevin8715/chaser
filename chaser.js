@@ -148,9 +148,9 @@ function drawScene() {
   enemies.forEach(enemy => enemy.draw());
   updateScene();
   if (progressBar.value <= 0) {
-    ctx.font = "50px Arial";
+    ctx.fillStyle = "black"
+    ctx.font = "40px Arial";
     ctx.fillText("Game over, click to play again", 10, 50);
-    ctx.fillStyle = "https://data.whicdn.com/images/192966871/large.jpg";
     enemies.forEach(enemy => {
     if(enemy.specialAttribute === 3){
       enemies.pop();
