@@ -56,7 +56,7 @@ class Sprite {
   }
   specialAttributeAction(referencedSprite){
     if(referencedSprite.specialAttribute == 1){
-      enemies.push(new Enemy(referencedSprite.x, referencedSprite.y, referencedSprite.radius, referencedSprite.color, referencedSprite.speed*2, "http://www.clker.com/cliparts/1/i/h/v/I/e/ball-md.png"));
+      enemies.push(new Enemy(referencedSprite.x, referencedSprite.y, referencedSprite.radius, referencedSprite.color, referencedSprite.speed*2, "http://www.clker.com/cliparts/1/i/h/v/I/e/ball-md.png", 3), );
     }
     if(referencedSprite.specialAttribute == 2){
       enemies.push(new Enemy(referencedSprite.x, referencedSprite.y, referencedSprite.radius, referencedSprite.color, referencedSprite.speed*0.5, "https://vignette.wikia.nocookie.net/hollowknight/images/6/6e/B_Crystal_Crawler.png/revision/latest?cb=20170412170111"));
@@ -82,7 +82,7 @@ class Player extends Sprite {
   }
 }
 
-let player = new Player(250, 150, 30, "lemonchiffon", 0.07, "https://vignette.wikia.nocookie.net/hollowknight/images/2/27/The_Knight.png/revision/latest?cb=20170712213446");
+let player = new Player(250, 150, 30, "lemonchiffon", 0.07, "https://vignette.wikia.nocookie.net/hollowknight/images/2/27/The_Knight.png/revision/latest?cb=20170712213446", 3);
 
 class Enemy extends Sprite {
     constructor(x, y, radius, color, speed, imageURL, specialAttribute) {
@@ -109,7 +109,6 @@ let enemies = [
   new Enemy(0, 200, 20, "rgba(250, 210, 70, 0.6)", 0.008, "https://vignette.wikia.nocookie.net/hollowknight/images/0/02/B_Crystal_Guardian.png/revision/latest?cb=20170412170806", 2),
   new Enemy(400, 400, 20, "rgba(0, 200, 250, 0.6)", 0.008, "https://vignette2.wikia.nocookie.net/hollowknight/images/b/b9/B_Shade.png/revision/latest?cb=20170413174926")
 ];
-
 
 let mouse = { x: 0, y: 0 };
 function updateMouse(event) {
@@ -138,7 +137,7 @@ function updateScene() {
 }
 
 function clearBackground() {
-  ctx.fillStyle = "lightgreen";
+  ctx.fillStyle = "blue";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
@@ -149,8 +148,18 @@ function drawScene() {
   enemies.forEach(enemy => enemy.draw());
   updateScene();
   if (progressBar.value <= 0) {
-    ctx.font = "30px Arial";
+    ctx.font = "50px Arial";
     ctx.fillText("Game over, click to play again", 10, 50);
+    ctx.fillStyle = "https://data.whicdn.com/images/192966871/large.jpg";
+    enemies.forEach(enemy => {
+    if(enemy.specialAttribute === 3){
+      enemies.pop();
+    }
+  });
+    if(countForDrawSceneExecution >= 300){
+      enemies.pop();
+    }
+    countForDrawSceneExecution = 0;
   } else {
     requestAnimationFrame(drawScene);
   }
