@@ -121,5 +121,8 @@ function drawScene() {
   }
 }
 
-canvas.addEventListener("click", startGame);
-requestAnimationFrame(drawScene);
+canvas.addEventListener("click", () => {
+  if (game.isOver()) {
+    game.start();
+  }
+});
